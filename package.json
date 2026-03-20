@@ -1,0 +1,110 @@
+{
+  "name": "contextshield",
+  "displayName": "ContextShield",
+  "description": "Secure proxy and workspace guard for AI workflows.",
+  "version": "0.0.1",
+  "publisher": "hiteshshinde",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:contextshield.showOutput",
+    "onCommand:contextshield.enableProxyInterception"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "contextshield.showOutput",
+        "title": "ContextShield: Show Output"
+      },
+      {
+        "command": "contextshield.enableProxyInterception",
+        "title": "ContextShield: Enable Proxy Interception"
+      }
+    ],
+    "configuration": {
+      "title": "ContextShield",
+      "properties": {
+        "contextshield.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable ContextShield extension runtime."
+        },
+        "contextshield.proxy.port": {
+          "type": "number",
+          "default": 7080,
+          "minimum": 1,
+          "maximum": 65535,
+          "description": "Local proxy port used by ContextShield."
+        },
+        "contextshield.proxy.additionalDomains": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional LLM API domains to be considered by the shield pipeline."
+        },
+        "contextshield.shield.detectSecrets": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable secret detection in outgoing requests."
+        },
+        "contextshield.shield.detectPii": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable PII detection in outgoing requests."
+        },
+        "contextshield.shield.enhancedPii": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable enhanced PII detection model when available."
+        },
+        "contextshield.shield.customPatterns": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "description": "Custom regex patterns for additional secret detection."
+        },
+        "contextshield.sandbox.blockedPaths": {
+          "type": "array",
+          "default": [
+            ".env",
+            ".env.local",
+            "secrets.yaml",
+            ".aws/credentials",
+            "config/production.json"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "description": "Workspace paths blocked from AI tooling access."
+        },
+        "contextshield.audit.logToOutputChannel": {
+          "type": "boolean",
+          "default": true,
+          "description": "Write ContextShield events to the VS Code Output Channel."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node ./scripts/build.mjs",
+    "watch": "node ./scripts/build.mjs --watch",
+    "check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.31",
+    "@types/vscode": "^1.100.0",
+    "esbuild": "^0.25.4",
+    "typescript": "^5.8.3"
+  }
+}
