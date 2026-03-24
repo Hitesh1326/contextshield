@@ -1,3 +1,3 @@
 export { shannonEntropy } from "./entropy";
-export { scrubText } from "./scrubText";
-export type { ScrubTextResult } from "./scrubText";
+export { createScrubPipeline, scrubText } from "./scrubText";
+export type { ScrubTextResult } from "./ScrubTextResult";
