@@ -61,7 +61,9 @@
         "contextshield.scrubbing.customPatterns": {
           "type": "array",
           "default": [],
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "Additional regex patterns for secret detection."
         },
         "contextshield.llm.model": {
@@ -92,13 +94,16 @@
   "scripts": {
     "build": "node ./scripts/build.mjs",
     "watch": "node ./scripts/build.mjs --watch",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "test": "jest"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^22.15.31",
     "@types/vscode": "^1.100.0",
     "esbuild": "^0.25.4",
+    "jest": "^30.3.0",
+    "ts-jest": "^29.4.6",
     "typescript": "^5.8.3"
-  },
-  "dependencies": {}
+  }
 }

@@ -1,8 +1,8 @@
-import type { ContextShieldConfig } from "../shared/types";
-import { CustomPatternScrubber } from "./CustomPatternScrubber";
-import { PiiScrubber } from "./PiiScrubber";
-import { Scrubber } from "./Scrubber";
-import { SecretScrubber } from "./SecretScrubber";
+import type { ContextShieldConfig } from "../../shared/types";
+import { CustomPatternScrubber } from "../CustomPatternScrubber";
+import { PiiScrubber } from "../PiiScrubber";
+import { Scrubber } from "../Scrubber";
+import { SecretScrubber } from "../SecretScrubber";
 import type { ScrubTextResult } from "./ScrubTextResult";
 
 export type { ScrubTextResult } from "./ScrubTextResult";

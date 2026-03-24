@@ -1,5 +1,5 @@
 import type { ScrubEntity } from "../shared/types";
-import { shannonEntropy } from "./entropy";
+import { shannonEntropy } from "./entropy/entropy";
 import type { IScrubber, ScrubStepResult } from "./interfaces/IScrubber";
 
 /** IAM access key ID: `AKIA` plus 16 uppercase letters or digits (20 chars total). */

@@ -1,6 +1,6 @@
 import type { ScrubEntity } from "../shared/types";
 import type { IScrubber } from "./interfaces/IScrubber";
-import type { ScrubTextResult } from "./ScrubTextResult";
+import type { ScrubTextResult } from "./scrubText/ScrubTextResult";
 
 /**
  * Runs an ordered list of {@link IScrubber} steps, merging text and entity lists.
