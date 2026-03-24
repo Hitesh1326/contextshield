@@ -1,7 +1,7 @@
 {
   "name": "contextshield",
   "displayName": "ContextShield",
-  "description": "Secure proxy and workspace guard for AI workflows.",
+  "description": "Local PII/secret scrubbing and prompt enhancement before you send text to AI (Cursor, Copilot, etc.).",
   "version": "0.0.1",
   "publisher": "hiteshshinde",
   "license": "MIT",
@@ -14,7 +14,7 @@
   "activationEvents": [
     "onStartupFinished",
     "onCommand:contextshield.showOutput",
-    "onCommand:contextshield.enableProxyInterception"
+    "onCommand:contextshield.enhancePrompt"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -24,8 +24,15 @@
         "title": "ContextShield: Show Output"
       },
       {
-        "command": "contextshield.enableProxyInterception",
-        "title": "ContextShield: Enable Proxy Interception"
+        "command": "contextshield.enhancePrompt",
+        "title": "ContextShield: Enhance Prompt"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "contextshield.enhancePrompt",
+        "key": "ctrl+shift+2",
+        "mac": "cmd+shift+2"
       }
     ],
     "configuration": {
@@ -36,57 +43,43 @@
           "default": true,
           "description": "Enable ContextShield extension runtime."
         },
-        "contextshield.proxy.port": {
+        "contextshield.scrubbing.pii": {
+          "type": "boolean",
+          "default": true,
+          "description": "Detect and redact PII before prompt enhancement."
+        },
+        "contextshield.scrubbing.secrets": {
+          "type": "boolean",
+          "default": true,
+          "description": "Detect and redact secrets (API keys, tokens) before prompt enhancement."
+        },
+        "contextshield.scrubbing.entropyThreshold": {
           "type": "number",
-          "default": 7080,
-          "minimum": 1,
-          "maximum": 65535,
-          "description": "Local proxy port used by ContextShield."
+          "default": 4.5,
+          "description": "Shannon entropy threshold for flagging high-entropy tokens as secrets."
         },
-        "contextshield.proxy.additionalDomains": {
+        "contextshield.scrubbing.customPatterns": {
           "type": "array",
           "default": [],
-          "items": {
-            "type": "string"
-          },
-          "description": "Additional LLM API domains to be considered by the shield pipeline."
+          "items": { "type": "string" },
+          "description": "Additional regex patterns for secret detection."
         },
-        "contextshield.shield.detectSecrets": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable secret detection in outgoing requests."
+        "contextshield.llm.model": {
+          "type": "string",
+          "default": "onnx-community/Phi-4-mini-instruct-ONNX-GQA",
+          "description": "Hugging Face model id for local ONNX inference (transformers.js)."
         },
-        "contextshield.shield.detectPii": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable PII detection in outgoing requests."
+        "contextshield.llm.systemPrompt": {
+          "type": "string",
+          "default": "",
+          "description": "Override default system prompt for enhancement. Empty uses built-in default."
         },
-        "contextshield.shield.enhancedPii": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable enhanced PII detection model when available."
-        },
-        "contextshield.shield.customPatterns": {
-          "type": "array",
-          "default": [],
-          "items": {
-            "type": "string"
-          },
-          "description": "Custom regex patterns for additional secret detection."
-        },
-        "contextshield.sandbox.blockedPaths": {
-          "type": "array",
-          "default": [
-            ".env",
-            ".env.local",
-            "secrets.yaml",
-            ".aws/credentials",
-            "config/production.json"
-          ],
-          "items": {
-            "type": "string"
-          },
-          "description": "Workspace paths blocked from AI tooling access."
+        "contextshield.llm.maxNewTokens": {
+          "type": "number",
+          "default": 1024,
+          "minimum": 128,
+          "maximum": 2048,
+          "description": "Maximum new tokens for the enhanced prompt output."
         },
         "contextshield.audit.logToOutputChannel": {
           "type": "boolean",
@@ -106,5 +99,6 @@
     "@types/vscode": "^1.100.0",
     "esbuild": "^0.25.4",
     "typescript": "^5.8.3"
-  }
+  },
+  "dependencies": {}
 }
