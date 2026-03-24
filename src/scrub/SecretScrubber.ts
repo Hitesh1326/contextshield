@@ -2,6 +2,9 @@ import type { ScrubEntity } from "../shared/types";
 import { shannonEntropy } from "./entropy";
 import type { IScrubber, ScrubStepResult } from "./interfaces/IScrubber";
 
+/** IAM access key ID: `AKIA` plus 16 uppercase letters or digits (20 chars total). */
+const AWS_ACCESS_KEY_ID_RE = /\bAKIA[0-9A-Z]{16}\b/g;
+
 /** JWT-like token (header.payload.signature). */
 const JWT_RE = /\b[A-Za-z0-9\-_]{8,}\.[A-Za-z0-9\-_]{8,}\.[A-Za-z0-9\-_]{8,}\b/g;
 
@@ -11,8 +14,9 @@ const HIGH_ENTROPY_TOKEN_RE = /\b[A-Za-z0-9+/=_\-]{16,}\b/g;
 const PLACEHOLDER = "[SECRET]";
 
 /**
- * JWT pass first (whole token), then high-entropy tokens — avoids matching inside JWT segments.
- * Every match uses the same placeholder; {@link ScrubEntity} entries still count each span.
+ * Detects secrets: AWS access key IDs, JWT-shaped strings, then high-entropy tokens.
+ * AWS and JWT run before entropy so long tokens are not partially redacted.
+ * All matches use the placeholder `[SECRET]`; {@link ScrubEntity.kind} distinguishes the rule.
  */
 export class SecretScrubber implements IScrubber {
   constructor(
@@ -20,6 +24,9 @@ export class SecretScrubber implements IScrubber {
     private readonly entropyThreshold: number
   ) {}
 
+  /**
+   * Runs AWS, JWT, then entropy passes. Each match is recorded with a rule-specific `kind` on {@link ScrubEntity}.
+   */
   scrub(text: string): ScrubStepResult {
     if (!this.enabled) {
       return { text, entities: [] };
@@ -27,7 +34,12 @@ export class SecretScrubber implements IScrubber {
 
     const entities: ScrubEntity[] = [];
 
-    let out = text.replace(JWT_RE, () => {
+    let out = text.replace(AWS_ACCESS_KEY_ID_RE, () => {
+      entities.push({ kind: "secret_aws_access_key_id", placeholder: PLACEHOLDER });
+      return PLACEHOLDER;
+    });
+
+    out = out.replace(JWT_RE, () => {
       entities.push({ kind: "secret_jwt", placeholder: PLACEHOLDER });
       return PLACEHOLDER;
     });
