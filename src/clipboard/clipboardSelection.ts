@@ -4,30 +4,30 @@ import { sleep } from "../shared/sleep";
 /** Milliseconds to wait after `clipboardCopyAction` before reading the clipboard. */
 const COPY_SETTLE_MS = 80;
 
-/**
- * Result of attempting to copy the current selection from the focused control.
- *
- * @remarks
- * Uses `editor.action.clipboardCopyAction`, which requires a non-empty selection in the
- * focused editor or input. If the copy yields empty text, the prior clipboard is restored.
- */
+/** A sentinel value written to the clipboard before copying so we can detect "no selection". */
+const SENTINEL = "\x00__contextshield_sentinel__\x00";
+
+/** Result of attempting to capture the focused control's current selection. */
 export type CaptureSelectionResult =
   | { ok: true; text: string; previousClipboard: string }
   | { ok: false; previousClipboard: string };
 
 /**
- * Copies the focused control’s current selection into the system clipboard and returns that text.
+ * Reads the user's current selection from whichever control is focused (editor, AI input box, etc.)
+ * by writing a sentinel value to the clipboard, running `editor.action.clipboardCopyAction`, then
+ * checking whether the clipboard changed from the sentinel.
  *
- * @returns When copy succeeds: `{ ok: true, text, previousClipboard }`.
- * When nothing was selected (empty copy): `{ ok: false, previousClipboard }` and the clipboard is restored.
+ * Returns `{ ok: false }` when nothing was selected (clipboard still holds the sentinel after copy).
+ * The previous clipboard contents are always restored on failure or success.
  */
 export async function captureSelectionViaCopy(): Promise<CaptureSelectionResult> {
   const previousClipboard = await vscode.env.clipboard.readText();
+  await vscode.env.clipboard.writeText(SENTINEL);
   await vscode.commands.executeCommand("editor.action.clipboardCopyAction");
   await sleep(COPY_SETTLE_MS);
   const text = await vscode.env.clipboard.readText();
 
-  if (!text.trim()) {
+  if (!text.trim() || text === SENTINEL) {
     await vscode.env.clipboard.writeText(previousClipboard);
     return { ok: false, previousClipboard };
   }
