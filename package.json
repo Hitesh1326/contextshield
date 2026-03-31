@@ -4,6 +4,10 @@
   "description": "Local PII/secret scrubbing and prompt enhancement before you send text to AI (Cursor, Copilot, etc.).",
   "version": "0.0.1",
   "publisher": "hiteshshinde",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Hitesh1326/contextshield.git"
+  },
   "license": "MIT",
   "engines": {
     "vscode": "^1.100.0"
@@ -12,20 +16,43 @@
     "Other"
   ],
   "activationEvents": [
-    "onStartupFinished",
     "onCommand:contextshield.showOutput",
-    "onCommand:contextshield.enhancePrompt"
+    "onCommand:contextshield.openSidebar",
+    "onCommand:contextshield.enhancePrompt",
+    "onView:contextshield-sidebar"
   ],
   "main": "./dist/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "contextshield-sidebar",
+          "title": "ContextShield",
+          "icon": "$(shield)"
+        }
+      ]
+    },
+    "views": {
+      "contextshield-sidebar": [
+        {
+          "type": "webview",
+          "id": "contextshield.settingsPanel",
+          "name": "ContextShield"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "contextshield.showOutput",
         "title": "ContextShield: Show Output"
       },
       {
-        "command": "contextshield.enhancePrompt",
-        "title": "ContextShield: Enhance Prompt"
+        "command": "contextshield.openSettings",
+        "title": "ContextShield: Open Settings"
+      },
+      {
+        "command": "contextshield.openSidebar",
+        "title": "ContextShield: Open Sidebar"
       }
     ],
     "keybindings": [
@@ -35,61 +62,93 @@
         "mac": "cmd+shift+2"
       }
     ],
-    "configuration": {
-      "title": "ContextShield",
-      "properties": {
-        "contextshield.enabled": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable ContextShield extension runtime."
-        },
-        "contextshield.scrubbing.pii": {
-          "type": "boolean",
-          "default": true,
-          "description": "Detect and redact PII before prompt enhancement."
-        },
-        "contextshield.scrubbing.secrets": {
-          "type": "boolean",
-          "default": true,
-          "description": "Detect and redact secrets (API keys, tokens) before prompt enhancement."
-        },
-        "contextshield.scrubbing.entropyThreshold": {
-          "type": "number",
-          "default": 4.5,
-          "description": "Shannon entropy threshold for flagging high-entropy tokens as secrets."
-        },
-        "contextshield.scrubbing.customPatterns": {
-          "type": "array",
-          "default": [],
-          "items": {
-            "type": "string"
+    "configuration": [
+      {
+        "id": "general",
+        "title": "General",
+        "properties": {
+          "contextshield.enabled": {
+            "type": "boolean",
+            "default": true,
+            "title": "Enabled",
+            "description": "Enable ContextShield extension runtime."
           },
-          "description": "Additional regex patterns for secret detection."
-        },
-        "contextshield.llm.model": {
-          "type": "string",
-          "default": "onnx-community/Phi-4-mini-instruct-ONNX-GQA",
-          "description": "Hugging Face model id for local ONNX inference (transformers.js)."
-        },
-        "contextshield.llm.systemPrompt": {
-          "type": "string",
-          "default": "",
-          "description": "Override default system prompt for enhancement. Empty uses built-in default."
-        },
-        "contextshield.llm.maxNewTokens": {
-          "type": "number",
-          "default": 1024,
-          "minimum": 128,
-          "maximum": 2048,
-          "description": "Maximum new tokens for the enhanced prompt output."
-        },
-        "contextshield.audit.logToOutputChannel": {
-          "type": "boolean",
-          "default": true,
-          "description": "Write ContextShield events to the VS Code Output Channel."
+          "contextshield.audit.logToOutputChannel": {
+            "type": "boolean",
+            "default": true,
+            "title": "Log to Output",
+            "description": "Write ContextShield events to the VS Code Output Channel."
+          }
+        }
+      },
+      {
+        "id": "scrubbing",
+        "title": "Scrubbing",
+        "properties": {
+          "contextshield.scrubbing.pii": {
+            "type": "boolean",
+            "default": true,
+            "title": "Scrub PII",
+            "description": "Detect and redact PII (email, phone, IP, UUID) before prompt enhancement."
+          },
+          "contextshield.scrubbing.secrets": {
+            "type": "boolean",
+            "default": true,
+            "title": "Scrub Secrets",
+            "description": "Detect and redact secrets (API keys, JWTs, tokens) before prompt enhancement."
+          },
+          "contextshield.scrubbing.entropyThreshold": {
+            "type": "number",
+            "default": 4.5,
+            "minimum": 1,
+            "maximum": 8,
+            "title": "Entropy Threshold",
+            "description": "Shannon entropy threshold (bits per symbol) for flagging high-entropy tokens as secrets. Range 1–8; default 4.5."
+          },
+          "contextshield.scrubbing.customPatterns": {
+            "type": "array",
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Custom Patterns",
+            "description": "Additional regex patterns for secret detection. One pattern per line."
+          }
+        }
+      },
+      {
+        "id": "llm",
+        "title": "LLM",
+        "properties": {
+          "contextshield.llm.enabled": {
+            "type": "boolean",
+            "default": true,
+            "title": "Enabled",
+            "description": "After scrubbing, rewrite the prompt with a local on-device model. Use the ContextShield sidebar to download the model."
+          },
+          "contextshield.llm.model": {
+            "type": "string",
+            "default": "onnx-community/Llama-3.2-3B-Instruct-ONNX",
+            "title": "Model",
+            "description": "Hugging Face model id for local ONNX inference. Compatibility depends on the current Transformers.js/ONNX runtime."
+          },
+          "contextshield.llm.systemPrompt": {
+            "type": "string",
+            "default": "",
+            "title": "System Prompt",
+            "description": "Override default system prompt for enhancement. Empty uses built-in default."
+          },
+          "contextshield.llm.maxNewTokens": {
+            "type": "number",
+            "default": 1024,
+            "minimum": 128,
+            "maximum": 2048,
+            "title": "Max New Tokens",
+            "description": "Maximum new tokens for the enhanced prompt output."
+          }
         }
       }
-    }
+    ]
   },
   "scripts": {
     "build": "node ./scripts/build.mjs",
@@ -98,12 +157,21 @@
     "test": "jest"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.2.2",
     "@types/jest": "^30.0.0",
     "@types/node": "^22.15.31",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "@types/vscode": "^1.100.0",
     "esbuild": "^0.25.4",
     "jest": "^30.3.0",
+    "tailwindcss": "^4.2.2",
     "ts-jest": "^29.4.6",
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^3.8.1",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
   }
 }

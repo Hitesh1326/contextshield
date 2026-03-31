@@ -3,7 +3,7 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "lib": ["ES2022"],
+    "lib": ["ES2022", "DOM"],
     "strict": true,
     "isolatedModules": true,
     "noImplicitOverride": true,
@@ -13,7 +13,8 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "rootDir": "src",
-    "types": ["node", "vscode", "jest"]
+    "types": ["node", "vscode", "jest"],
+    "jsx": "react-jsx"
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx"]
 }
