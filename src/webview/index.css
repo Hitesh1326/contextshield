@@ -1,0 +1,388 @@
+@import "tailwindcss";
+@source "./src/webview/**/*.{ts,tsx}";
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    padding: 12px;
+    font-family: var(--vscode-font-family);
+    font-size: var(--vscode-font-size);
+    line-height: 1.5;
+    color: var(--vscode-foreground);
+    background: var(--vscode-sideBar-background);
+  }
+}
+
+@layer components {
+  .section {
+    @apply mb-5;
+  }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--vscode-sideBarSectionHeader-foreground, var(--vscode-foreground));
+    opacity: 0.72;
+    @apply mb-2;
+  }
+
+  .model-card {
+    background: var(--vscode-input-background);
+    border: 1px solid var(--vscode-input-border, transparent);
+    @apply rounded-md p-3;
+  }
+
+  .model-name {
+    @apply mb-1 text-[13px] font-semibold break-all;
+  }
+
+  .model-status {
+    @apply mb-2.5 flex items-center gap-1.5 text-[11px];
+  }
+
+  .status-dot {
+    @apply h-[7px] w-[7px] shrink-0 rounded-full;
+  }
+  .status-dot.ready {
+    background: #4caf50;
+  }
+  .status-dot.unknown {
+    background: var(--vscode-foreground);
+    opacity: 0.3;
+  }
+  .status-dot.downloading {
+    background: #2196f3;
+    animation: cs-pulse 1s infinite;
+  }
+  .status-dot.error {
+    background: #f44336;
+  }
+
+  .progress-bar-wrap {
+    height: 4px;
+    background: color-mix(in srgb, var(--vscode-progressBar-background, #0e70c0) 28%, transparent);
+    @apply mb-2.5 hidden overflow-hidden rounded;
+  }
+  .progress-bar-wrap.visible {
+    @apply block;
+  }
+  .progress-bar-inner {
+    height: 100%;
+    width: 40%;
+    background: var(--vscode-progressBar-background, #0e70c0);
+    filter: brightness(1.5);
+    animation: cs-indeterminate 1.4s infinite ease-in-out;
+  }
+
+  button.cs-btn {
+    @apply w-full rounded px-3 py-1.5 text-[12px] font-medium transition;
+  }
+
+  button.cs-btn-primary {
+    background: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+  }
+  button.cs-btn-primary:hover {
+    background: var(--vscode-button-hoverBackground);
+  }
+  button.cs-btn-primary:disabled {
+    @apply cursor-not-allowed opacity-60;
+  }
+
+  .field {
+    @apply mb-3;
+  }
+
+  .field label {
+    @apply mb-1 flex items-center justify-between text-[12px];
+  }
+
+  .field input[type="number"],
+  .field textarea {
+    width: 100%;
+    background: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    border: 1px solid var(--vscode-input-border, transparent);
+    font-family: inherit;
+    font-size: 12px;
+    @apply rounded px-2 py-1.5;
+  }
+  .field textarea {
+    @apply resize-y;
+  }
+
+  .field input:focus,
+  .field textarea:focus {
+    outline: 1px solid var(--vscode-focusBorder);
+  }
+
+  .toggle-row {
+    @apply mb-2.5 flex items-center justify-between;
+  }
+  .toggle-label {
+    @apply text-[12px];
+  }
+
+  .toggle {
+    @apply relative h-[18px] w-8 shrink-0;
+  }
+  .toggle input {
+    @apply h-0 w-0 opacity-0;
+  }
+  .toggle-track {
+    position: absolute;
+    inset: 0;
+    background: var(--vscode-input-border, #444);
+    @apply cursor-pointer rounded-full transition-colors;
+  }
+  .toggle input:checked + .toggle-track {
+    background: var(--vscode-button-background);
+  }
+  .toggle-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+    background: #fff;
+    pointer-events: none;
+    @apply rounded-full transition-transform;
+  }
+  .toggle input:checked ~ .toggle-thumb {
+    transform: translateX(14px);
+  }
+
+  .hint {
+    @apply mt-0.5 text-[11px] opacity-65;
+  }
+
+  .keybinding {
+    background: var(--vscode-keybindingLabel-background, rgba(128, 128, 128, 0.15));
+    border: 1px solid var(--vscode-keybindingLabel-border, rgba(128, 128, 128, 0.35));
+    font-family: var(--vscode-editor-font-family, monospace);
+    @apply rounded px-1.5 py-0.5 text-[11px];
+  }
+
+  .shortcut-row {
+    @apply flex items-center justify-between text-[12px] opacity-85;
+  }
+
+  hr.cs-hr {
+    border: none;
+    border-top: 1px solid var(--vscode-sideBarSectionHeader-border, rgba(128, 128, 128, 0.2));
+    @apply my-4;
+  }
+
+  .cs-collapsible {
+    @apply mb-5;
+  }
+
+  .cs-collapsible-panel .section {
+    margin-bottom: 0;
+  }
+
+  .cs-collapsible-trigger {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    margin: 0 0 8px;
+    padding: 2px 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+  }
+
+  .cs-collapsible-trigger:focus-visible {
+    outline: 1px solid var(--vscode-focusBorder);
+    outline-offset: 2px;
+  }
+
+  .cs-collapsible-chevron {
+    width: 14px;
+    font-size: 9px;
+    opacity: 0.75;
+    flex-shrink: 0;
+  }
+
+  .cs-collapsible-title {
+    margin-bottom: 0;
+    opacity: 0.9;
+  }
+
+  .cs-collapsible-panel {
+    padding-top: 2px;
+  }
+
+  .field-label-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .field .field-label-row label {
+    margin-bottom: 0;
+    flex: 1;
+    font-size: 12px;
+  }
+
+  button.cs-btn-secondary {
+    background: transparent;
+    color: var(--vscode-textLink-foreground, var(--vscode-foreground));
+    border: 1px solid var(--vscode-button-secondaryBorder, var(--vscode-widget-border, rgba(128, 128, 128, 0.45)));
+  }
+
+  button.cs-btn-secondary:hover {
+    background: var(--vscode-toolbar-hoverBackground, rgba(128, 128, 128, 0.12));
+  }
+
+  button.cs-btn-secondary:disabled {
+    @apply cursor-not-allowed opacity-45;
+  }
+
+  .cs-btn-row {
+    @apply mt-2 flex flex-wrap gap-2;
+  }
+
+  .cs-link {
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--vscode-textLink-foreground);
+    font: inherit;
+    font-size: 11px;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .cs-link:hover {
+    color: var(--vscode-textLink-activeForeground, var(--vscode-textLink-foreground));
+  }
+
+  .cs-link:focus-visible {
+    outline: 1px solid var(--vscode-focusBorder);
+    outline-offset: 2px;
+  }
+
+  .cs-link:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+    text-decoration: none;
+  }
+
+  .cs-disabled-block,
+  .cs-disabled-subtree {
+    opacity: 0.48;
+    transition: opacity 0.15s ease;
+  }
+
+  .cs-disabled-subtree .toggle-row .toggle-label {
+    opacity: 0.92;
+  }
+
+  .cs-code {
+    font-family: var(--vscode-editor-font-family, monospace);
+    font-size: 10px;
+    padding: 1px 4px;
+    border-radius: 3px;
+    background: var(--vscode-textCodeBlock-background, rgba(128, 128, 128, 0.12));
+  }
+
+  .model-card-error {
+    border-color: color-mix(in srgb, #f44336 55%, var(--vscode-input-border, transparent));
+  }
+
+  .model-error-detail {
+    color: color-mix(in srgb, #f44336 85%, var(--vscode-foreground));
+    @apply mb-2 text-[11px] leading-snug;
+  }
+
+  .cs-loading {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 8px 0 16px;
+  }
+
+  .cs-spinner-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .cs-spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid color-mix(in srgb, var(--vscode-foreground) 20%, transparent);
+    border-top-color: var(--vscode-progressBar-background, #0e70c0);
+    border-radius: 50%;
+    animation: cs-spin 0.8s linear infinite;
+  }
+
+  .cs-loading-title {
+    font-size: 12px;
+    opacity: 0.86;
+  }
+
+  .cs-skeleton-line {
+    height: 10px;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--vscode-foreground) 14%, transparent);
+    animation: cs-skeleton-pulse 1.2s ease-in-out infinite;
+  }
+
+  .cs-skeleton-line--short {
+    width: 55%;
+  }
+
+  .cs-skeleton-line--medium {
+    width: 72%;
+  }
+}
+
+@keyframes cs-skeleton-pulse {
+  0%, 100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+@keyframes cs-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes cs-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(350%);
+  }
+}
+
+@keyframes cs-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

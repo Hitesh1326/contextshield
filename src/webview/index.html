@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src {{CSP_SOURCE}}; script-src 'nonce-{{NONCE}}' {{CSP_SOURCE}}; connect-src {{CSP_SOURCE}};">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ContextShield</title>
+  <link rel="stylesheet" href="{{STYLE_URI}}">
+</head>
+<body>
+  <div id="root">Loading ContextShield settings...</div>
+  <script nonce="{{NONCE}}" src="{{SCRIPT_URI}}"></script>
+</body>
+</html>
