@@ -11,6 +11,14 @@ const JWT_RE = /\b[A-Za-z0-9\-_]{8,}\.[A-Za-z0-9\-_]{8,}\.[A-Za-z0-9\-_]{8,}\b/g
 /** Candidate tokens for entropy-based secret detection. */
 const HIGH_ENTROPY_TOKEN_RE = /\b[A-Za-z0-9+/=_\-]{16,}\b/g;
 
+/**
+ * Matches values assigned to password-like keys in code or config.
+ * Covers: password: 'val', password = "val", password: `val`, PASSWORD=val
+ * Captures the value in group 1.
+ */
+const PASSWORD_IN_CONTEXT_RE =
+  /(?:password|passwd|pass|secret|pwd|token|api[_\-]?key|auth[_\-]?token|access[_\-]?token|private[_\-]?key)\s*(?:[:=])\s*['"`]?([^\s'"`;\n,)]{4,})['"`]?/gi;
+
 const PLACEHOLDER = "[SECRET]";
 
 /**
@@ -34,7 +42,12 @@ export class SecretScrubber implements IScrubber {
 
     const entities: ScrubEntity[] = [];
 
-    let out = text.replace(AWS_ACCESS_KEY_ID_RE, () => {
+    let out = text.replace(PASSWORD_IN_CONTEXT_RE, (match, value) => {
+      entities.push({ kind: "secret_password_in_context", placeholder: PLACEHOLDER });
+      return match.replace(value, PLACEHOLDER);
+    });
+
+    out = out.replace(AWS_ACCESS_KEY_ID_RE, () => {
       entities.push({ kind: "secret_aws_access_key_id", placeholder: PLACEHOLDER });
       return PLACEHOLDER;
     });
