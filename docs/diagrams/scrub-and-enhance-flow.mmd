@@ -1,0 +1,29 @@
+sequenceDiagram
+  autonumber
+  participant User as User
+  participant Cmd as enhancePrompt command
+  participant Clip as Clipboard utility
+  participant Scrub as scrubText()
+  participant MM as ModelManager
+  participant Worker as LLM Worker
+
+  User->>Cmd: Trigger keybinding
+  Cmd->>Clip: Capture selection via synthetic copy
+  Clip-->>Cmd: raw text + previous clipboard state
+  Cmd->>Scrub: Redact sensitive entities to typed placeholders
+  Scrub-->>Cmd: scrubbed text + entity metadata
+
+  alt LLM enabled and model available
+    Cmd->>MM: load() if not already ready
+    MM->>Worker: load { modelId, cacheDir } (IPC)
+    Worker-->>MM: ready
+    Cmd->>MM: enhance(scrubbedText, systemPrompt, maxNewTokens)
+    MM->>Worker: generate { id, system, user, maxNewTokens } (IPC)
+    Worker-->>MM: result { id, text }
+    MM-->>Cmd: enhanced text
+  else Scrub only (LLM disabled or unavailable)
+    Cmd-->>Cmd: use scrubbed text as final output
+  end
+
+  Cmd->>Clip: Paste replacement into selection + restore clipboard
+  Cmd-->>User: Selection replaced with sanitized or enhanced text

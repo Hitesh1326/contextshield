@@ -1,0 +1,31 @@
+flowchart TB
+  User(["User"])
+
+  subgraph A["Extension host — Node"]
+    direction TB
+    EXT["extension.ts"]
+    SB["SettingsBridge"]
+    SM["SettingsManager"]
+    SCRUB["scrubText()\nPII · secrets · custom patterns"]
+    MM["ModelManager\nWorker lifecycle · IPC orchestration"]
+    EXT --> SB & SM
+    EXT --> SCRUB --> MM
+  end
+
+  subgraph B["Sidebar webview — React"]
+    UI["Settings UI"]
+  end
+
+  subgraph C["LLM worker — isolated Node child process"]
+    direction TB
+    CHILD["llmWorkerChild.ts"]
+    LOADER["Model loader\nONNX · transformers runtime"]
+    GEN["Text generator"]
+    CACHE[("Hugging Face model cache")]
+    CHILD --> LOADER --> GEN --> CACHE
+  end
+
+  User -->|"keybinding / command"| EXT
+  User -->|"sidebar interaction"| UI
+  UI <-->|"postMessage"| SB
+  MM <-->|"IPC: load / generate / result"| CHILD
