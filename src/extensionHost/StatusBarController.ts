@@ -28,11 +28,19 @@ export class StatusBarController {
         this.item.backgroundColor = undefined;
         break;
       case "scanning":
-        this.item.text = "$(loading~spin) ContextShield: Scanning...";
+        this.item.text = "$(loading~spin) ContextShield: Scanning";
+        this.item.backgroundColor = undefined;
+        break;
+      case "enhancing":
+        this.item.text = "$(loading~spin) ContextShield: Enhancing";
         this.item.backgroundColor = undefined;
         break;
       case "done":
         this.item.text = "$(check) ContextShield: Done";
+        this.item.backgroundColor = undefined;
+        break;
+      case "disabled":
+        this.item.text = "$(circle-slash) ContextShield: Off";
         this.item.backgroundColor = undefined;
         break;
       case "error":
