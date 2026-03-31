@@ -1,5 +1,5 @@
 /** Visual state shown on the status bar item. */
-export type PipelineState = "idle" | "scanning" | "done" | "error";
+export type PipelineState = "idle" | "scanning" | "enhancing" | "done" | "disabled" | "error";
 
 /** Single line written to the audit output channel. */
 export interface LogEntry {
@@ -37,11 +37,13 @@ export interface ContextShieldConfig {
   scrubbingEntropyThreshold: number;
   /** User-supplied regex strings (invalid entries are skipped and logged). */
   scrubbingCustomPatterns: string[];
-  /** Reserved for future local LLM integration. */
+  /** When true, download/load the local ONNX model and run LLM enhancement after scrubbing. */
+  llmEnabled: boolean;
+  /** Hugging Face model id for transformers.js (fixed to Qwen2.5 in current build). */
   llmModel: string;
-  /** Reserved for future local LLM integration. */
+  /** System prompt for enhancement; empty uses built-in default. */
   llmSystemPrompt: string;
-  /** Reserved for future local LLM integration. */
+  /** Max new tokens for the local generation step. */
   llmMaxNewTokens: number;
   /** When true, append audit lines to the ContextShield output channel. */
   logToOutputChannel: boolean;

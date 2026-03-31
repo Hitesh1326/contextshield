@@ -1,28 +1,24 @@
+import path from "node:path";
 import * as vscode from "vscode";
-import { registerEnhancePromptCommand } from "./commands/enhancePromptCommand";
 import { AuditLogger } from "./logger/AuditLogger";
+import { ModelManager } from "./llm/ModelManager";
 import { SettingsManager } from "./settings/SettingsManager";
-import { COMMANDS, OUTPUT_CHANNEL_NAME } from "./shared/constants";
+import { COMMANDS, OUTPUT_CHANNEL_NAME, SETTINGS_VIEW_ID } from "./shared/constants";
 import type { ContextShieldConfig } from "./shared/types";
-import { StatusBarController } from "./ui/StatusBarController";
+import { StatusBarController } from "./extensionHost/StatusBarController";
+import { SettingsPanelProvider } from "./extensionHost/SettingsPanelProvider";
 
-/** Tooltip when the status item is idle and the extension is enabled. */
 const IDLE_TOOLTIP = "Click to open ContextShield output";
-
-/** Delay (ms) before resetting the status bar to idle after a completed or failed run. */
 const IDLE_RESET_MS = 2500;
 
 /**
- * Extension entry point: wires output logging, settings, status bar, and commands.
- *
- * @param context - VS Code extension context for registering disposables.
+ * VS Code extension entry point. Wires up the output channel, settings, status bar, LLM worker,
+ * and sidebar webview. The local model loads lazily from the sidebar or when settings change.
  */
 export function activate(context: vscode.ExtensionContext): void {
   const outputChannel = vscode.window.createOutputChannel(OUTPUT_CHANNEL_NAME);
   const logger = new AuditLogger(outputChannel);
   const settingsManager = new SettingsManager();
-  const statusBar = new StatusBarController(COMMANDS.showOutput);
-  let idleResetTimer: ReturnType<typeof setTimeout> | undefined;
 
   const logIfEnabled = (entry: Parameters<AuditLogger["log"]>[0]): void => {
     if (settingsManager.getConfig().logToOutputChannel) {
@@ -30,9 +26,31 @@ export function activate(context: vscode.ExtensionContext): void {
     }
   };
 
+  const modelManager = new ModelManager(
+    () => settingsManager.getConfig().llmModel,
+    path.join(context.globalStorageUri.fsPath, "hf-cache"),
+    logIfEnabled,
+    context.extensionPath
+  );
+
+  const settingsPanel = new SettingsPanelProvider(
+    context.extensionUri,
+    settingsManager,
+    modelManager
+  );
+
+  const settingsPanelReg = vscode.window.registerWebviewViewProvider(
+    SETTINGS_VIEW_ID,
+    settingsPanel,
+    { webviewOptions: { retainContextWhenHidden: true } }
+  );
+
+  const statusBar = new StatusBarController(COMMANDS.showOutput);
+  let idleResetTimer: ReturnType<typeof setTimeout> | undefined;
+
   const applyStatus = (config: ContextShieldConfig): void => {
     if (!config.enabled) {
-      statusBar.update("error", "ContextShield is disabled — enable in settings");
+      statusBar.update("disabled", "ContextShield is disabled — enable in settings");
     } else {
       statusBar.update("idle", IDLE_TOOLTIP);
     }
@@ -49,33 +67,48 @@ export function activate(context: vscode.ExtensionContext): void {
   };
 
   const initialConfig = settingsManager.getConfig();
-  logIfEnabled({
-    level: "info",
-    message: "ContextShield activated.",
-    context: initialConfig
-  });
+  logIfEnabled({ level: "info", message: "ContextShield activated.", context: initialConfig });
   applyStatus(initialConfig);
 
-  const showOutputCmd = vscode.commands.registerCommand(COMMANDS.showOutput, () => {
-    logger.show();
+  const showOutputCmd = vscode.commands.registerCommand(COMMANDS.showOutput, () => logger.show());
+
+  const openSettingsCmd = vscode.commands.registerCommand(COMMANDS.openSettings, () => {
+    void vscode.commands.executeCommand("workbench.action.openSettings", "contextshield");
   });
 
-  const enhancePromptCmd = registerEnhancePromptCommand({
-    settingsManager,
-    statusBar,
-    logIfEnabled,
-    resetToIdle
+  const openSidebarCmd = vscode.commands.registerCommand(COMMANDS.openSidebar, () => {
+    void vscode.commands.executeCommand("workbench.view.extension.contextshield-sidebar");
+  });
+
+  const enhancePromptCmd = vscode.commands.registerCommand(COMMANDS.enhancePrompt, async () => {
+    const { runEnhancePrompt } = await import("./commands/enhancePromptCommand.js");
+    await runEnhancePrompt({
+      settingsManager,
+      statusBar,
+      logIfEnabled,
+      resetToIdle,
+      modelManager
+    });
   });
 
   const configSub = settingsManager.onConfigChange((config) => {
-    if (config.logToOutputChannel) {
-      logger.log({
-        level: "info",
-        message: "Settings updated.",
-        context: config
+    logIfEnabled({ level: "info", message: "Settings updated.", context: config });
+    applyStatus(config);
+  });
+
+  const llmConfigSub = vscode.workspace.onDidChangeConfiguration((e) => {
+    if (
+      e.affectsConfiguration("contextshield.llm.model") &&
+      settingsManager.getConfig().llmEnabled
+    ) {
+      void modelManager.load().catch((err) => {
+        logIfEnabled({
+          level: "warn",
+          message: "Model reload after settings change failed.",
+          context: { error: err instanceof Error ? err.message : String(err) }
+        });
       });
     }
-    applyStatus(config);
   });
 
   context.subscriptions.push(
@@ -85,17 +118,19 @@ export function activate(context: vscode.ExtensionContext): void {
         if (idleResetTimer !== undefined) {
           clearTimeout(idleResetTimer);
         }
+        modelManager.dispose();
         statusBar.dispose();
       }
     },
     showOutputCmd,
+    openSettingsCmd,
+    openSidebarCmd,
     enhancePromptCmd,
-    configSub
+    settingsPanelReg,
+    configSub,
+    llmConfigSub
   );
 }
 
-/**
- * Called when the extension is deactivated; currently a no-op because disposables are
- * owned by `context.subscriptions`.
- */
+/** Called by VS Code when the extension is unloaded; worker cleanup happens via `dispose()`. */
 export function deactivate(): void {}

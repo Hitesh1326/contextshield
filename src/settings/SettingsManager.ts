@@ -7,21 +7,22 @@ import { SETTINGS } from "../shared/constants";
  * Reads `contextshield.*` settings from the VS Code workspace configuration API.
  */
 export class SettingsManager implements ISettingsManager {
+  private readonly defaultModel = "onnx-community/Llama-3.2-3B-Instruct-ONNX";
+
   /**
    * @returns Resolved configuration with defaults applied for missing keys.
    */
   public getConfig(): ContextShieldConfig {
     const cfg = vscode.workspace.getConfiguration();
+
     return {
       enabled: cfg.get<boolean>(SETTINGS.enabled, true),
       scrubbingPii: cfg.get<boolean>(SETTINGS.scrubbingPii, true),
       scrubbingSecrets: cfg.get<boolean>(SETTINGS.scrubbingSecrets, true),
       scrubbingEntropyThreshold: cfg.get<number>(SETTINGS.scrubbingEntropyThreshold, 4.5),
       scrubbingCustomPatterns: cfg.get<string[]>(SETTINGS.scrubbingCustomPatterns, []),
-      llmModel: cfg.get<string>(
-        SETTINGS.llmModel,
-        "onnx-community/Phi-4-mini-instruct-ONNX-GQA"
-      ),
+      llmEnabled: cfg.get<boolean>(SETTINGS.llmEnabled, true),
+      llmModel: cfg.get<string>(SETTINGS.llmModel, this.defaultModel),
       llmSystemPrompt: cfg.get<string>(SETTINGS.llmSystemPrompt, ""),
       llmMaxNewTokens: cfg.get<number>(SETTINGS.llmMaxNewTokens, 1024),
       logToOutputChannel: cfg.get<boolean>(SETTINGS.logToOutputChannel, true)
