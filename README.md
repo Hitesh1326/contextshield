@@ -10,6 +10,7 @@ ContextShield is a VS Code extension for developers who draft prompts quickly an
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![VS Code](https://img.shields.io/badge/VS%20Code-1.85+-blue?logo=visualstudiocode)](https://code.visualstudio.com/)
+[![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/HiteshShinde.contextshield?label=Visual%20Studio%20Marketplace)](https://marketplace.visualstudio.com/items?itemName=HiteshShinde.contextshield)
 
 ---
 
@@ -142,7 +143,7 @@ ContextShield is a tool for safer, clearer prompts — not a correctness oracle.
 
 ### From Marketplace
 
-Install `ContextShield` from the VS Code Marketplace when published.
+Install [ContextShield on Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=HiteshShinde.contextshield).
 
 ### From source / VSIX
 
