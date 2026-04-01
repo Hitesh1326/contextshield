@@ -1,7 +1,7 @@
 {
   "name": "contextshield",
   "displayName": "ContextShield",
-  "description": "Scrub sensitive data and improve prompt clarity before sending to any AI tool. Runs fully local, no cloud, no data leaves your machine.",
+  "description": "Scrub sensitive data and improve prompt clarity before sending to any AI tool. Fully local, no cloud, no data leaves your machine.",
   "version": "0.0.1",
   "publisher": "hiteshshinde",
   "repository": {
