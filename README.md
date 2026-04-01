@@ -6,7 +6,7 @@
 
 **Write freely. Scrub sensitive data and improve prompt clarity locally, before you send.**
 
-ContextShield is a VS Code extension for developers who draft prompts quickly and want two guarantees before sending: sensitive values are redacted, and the prompt is clearer and more structured. The entire flow runs locally on your machine using a local ONNX model.
+ContextShield is a VS Code extension that redacts PII and secrets from your editor selection, enhances the wording with a local Open Neural Network Exchange (ONNX) model, and replaces the text in place. No cloud required, nothing leaves your machine.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![VS Code](https://img.shields.io/badge/VS%20Code-1.85+-blue?logo=visualstudiocode)](https://code.visualstudio.com/)
