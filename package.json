@@ -15,6 +15,7 @@
   "categories": [
     "Other"
   ],
+  "icon": "assets/icon.png",
   "activationEvents": [
     "onCommand:contextshield.showOutput",
     "onCommand:contextshield.openSidebar",
