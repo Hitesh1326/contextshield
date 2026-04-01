@@ -1,4 +1,8 @@
-<h1><img src="./assets/icon.png" alt="" width="44" height="44" style="vertical-align: middle; margin-right: 10px;" />ContextShield</h1>
+<p align="center">
+  <img src="./assets/icon.png" alt="ContextShield" width="72" height="72" />
+</p>
+
+# ContextShield
 
 **Write freely. Scrub sensitive data and improve prompt clarity locally, before you send.**
 
