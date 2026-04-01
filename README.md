@@ -77,21 +77,6 @@ ContextShield solves both in one workflow:
 5. Press `Cmd+Shift+2` (Mac) / `Ctrl+Shift+2` (Windows/Linux)
 6. Review the replaced text, then send
 
-### Example transformation
-
-```
-Input:
-"ths function smetimes returns null idk why i think its the async part
-but also the validation might be wrong and also theres an internal ip
-10.0.14.22 in there somewhere"
-
-Output:
-"Investigate why the function intermittently returns null. Focus on the
-async handling and validation logic. The internal IP [IP_ADDRESS] may
-also be a contributing factor. Provide a revised implementation that
-addresses these issues."
-```
-
 ---
 
 ## Architecture Overview
