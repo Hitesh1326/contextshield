@@ -6,10 +6,14 @@ on:
       version:
         description: "Version to publish (example: 0.1.2)"
         required: true
-      publish_linux_arm64:
-        description: "Also publish linux-arm64 target"
-        type: boolean
-        default: false
+      publish_to:
+        description: "Where to publish (use Open VSX only if Marketplace already has this version)"
+        type: choice
+        options:
+          - both
+          - vscode-marketplace
+          - open-vsx
+        default: both
 
 permissions:
   contents: read
@@ -32,6 +36,8 @@ jobs:
             target: win32-arm64
           - os: ubuntu-latest
             target: linux-x64
+          - os: ubuntu-latest
+            target: linux-arm64
 
     steps:
       - name: Checkout
@@ -57,7 +63,8 @@ jobs:
         shell: bash
         run: npm run build
 
-      - name: Publish target to Marketplace
+      - name: Publish target to Visual Studio Marketplace
+        if: ${{ github.event.inputs.publish_to == 'both' || github.event.inputs.publish_to == 'vscode-marketplace' }}
         shell: bash
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
@@ -68,35 +75,14 @@ jobs:
           fi
           npx @vscode/vsce publish --pat "$VSCE_PAT" --target "${{ matrix.target }}"
 
-  publish-linux-arm64:
-    name: Publish linux-arm64
-    if: ${{ github.event.inputs.publish_linux_arm64 == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-
-      - name: Update version in package.json
-        shell: bash
-        run: |
-          node -e "const fs=require('fs');const p='package.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));j.version='${{ github.event.inputs.version }}';fs.writeFileSync(p, JSON.stringify(j,null,2)+'\\n');"
-
-      - name: Install dependencies (with optional native deps)
-        shell: bash
-        run: npm ci --include=optional
-
-      - name: Build extension
-        shell: bash
-        run: npm run build
-
-      - name: Publish linux-arm64 target
+      - name: Publish target to Open VSX
+        if: ${{ github.event.inputs.publish_to == 'both' || github.event.inputs.publish_to == 'open-vsx' }}
         shell: bash
         env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
-        run: npx @vscode/vsce publish --pat "$VSCE_PAT" --target linux-arm64
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        run: |
+          if [ -z "$OVSX_PAT" ]; then
+            echo "OVSX_PAT not set — skipping Open VSX (add repo secret to enable)."
+            exit 0
+          fi
+          npx ovsx -p "$OVSX_PAT" publish --target "${{ matrix.target }}"
