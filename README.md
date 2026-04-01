@@ -192,4 +192,4 @@ Press `F5` to launch the Extension Development Host.
 
 ## License
 
-MIT — see `LICENSE`.
+MIT — see [LICENSE](./LICENSE) for details.
