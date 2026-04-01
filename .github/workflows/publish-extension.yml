@@ -1,0 +1,98 @@
+name: Publish Extension (Multi-Platform)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish (example: 0.1.2)"
+        required: true
+      publish_linux_arm64:
+        description: "Also publish linux-arm64 target"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: darwin-arm64
+          - os: windows-latest
+            target: win32-x64
+          - os: ubuntu-latest
+            target: linux-x64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Update version in package.json
+        shell: bash
+        run: |
+          node -e "const fs=require('fs');const p='package.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));j.version='${{ github.event.inputs.version }}';fs.writeFileSync(p, JSON.stringify(j,null,2)+'\\n');"
+          node -e "console.log('Publishing version:', require('./package.json').version)"
+
+      - name: Install dependencies (with optional native deps)
+        shell: bash
+        run: npm ci --include=optional
+
+      - name: Build extension
+        shell: bash
+        run: npm run build
+
+      - name: Publish target to Marketplace
+        shell: bash
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          if [ -z "$VSCE_PAT" ]; then
+            echo "VSCE_PAT secret is not set" >&2
+            exit 1
+          fi
+          npx @vscode/vsce publish --pat "$VSCE_PAT" --target "${{ matrix.target }}"
+
+  publish-linux-arm64:
+    name: Publish linux-arm64
+    if: ${{ github.event.inputs.publish_linux_arm64 == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Update version in package.json
+        shell: bash
+        run: |
+          node -e "const fs=require('fs');const p='package.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));j.version='${{ github.event.inputs.version }}';fs.writeFileSync(p, JSON.stringify(j,null,2)+'\\n');"
+
+      - name: Install dependencies (with optional native deps)
+        shell: bash
+        run: npm ci --include=optional
+
+      - name: Build extension
+        shell: bash
+        run: npm run build
+
+      - name: Publish linux-arm64 target
+        shell: bash
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: npx @vscode/vsce publish --pat "$VSCE_PAT" --target linux-arm64
