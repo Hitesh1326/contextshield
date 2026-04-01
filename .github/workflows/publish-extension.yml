@@ -24,8 +24,12 @@ jobs:
         include:
           - os: macos-latest
             target: darwin-arm64
+          - os: macos-latest
+            target: darwin-x64
           - os: windows-latest
             target: win32-x64
+          - os: windows-latest
+            target: win32-arm64
           - os: ubuntu-latest
             target: linux-x64
 
@@ -36,7 +40,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Update version in package.json
@@ -75,7 +79,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Update version in package.json
