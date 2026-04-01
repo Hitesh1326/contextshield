@@ -60,9 +60,9 @@ ContextShield solves both in one workflow:
 
 ## Screenshot
 
-### Settings Sidebar
+### Demo
 
-Local model controls, enhancement settings, scrubbing controls, and quick shortcut guidance.
+![ContextShield demo](./assets/demo.gif)
 
 ---
 
