@@ -1,7 +1,27 @@
-**/.vscode/**
-**/.cursor/**
-**/src/**
-**/scripts/**
+.vscode/**
+.cursor/**
+src/**
+scripts/**
 **/*.map
 tsconfig.json
 assets/demo.gif
+
+# Exclude all node_modules by default.
+node_modules/**
+
+# Include only runtime dependencies needed by llmWorker.js
+!node_modules/@huggingface/**
+!node_modules/onnxruntime-node/**
+!node_modules/onnxruntime-web/**
+!node_modules/onnxruntime-common/**
+!node_modules/sharp/**
+!node_modules/@img/**
+!node_modules/detect-libc/**
+!node_modules/semver/**
+!node_modules/tar/**
+!node_modules/global-agent/**
+!node_modules/protobufjs/**
+!node_modules/long/**
+!node_modules/flatbuffers/**
+!node_modules/guid-typescript/**
+!node_modules/platform/**
